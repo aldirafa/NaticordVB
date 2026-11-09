@@ -25,14 +25,15 @@ Public Class Client
     End Sub
 
     ''' <summary>Opens a conversation in the content area.</summary>
-    Private Sub ShowChat(channel As Networking.Models.DiscordChannel, title As String)
+    Private Async Sub Sidebar_ChannelChosen(channel As Networking.Models.DiscordChannel, title As String) Handles _sidebar.ChannelChosen
         _statusPage.Hide()
-        _chatPage.OpenChannel(channel, title)
         _chatPage.Show()
-    End Sub
-
-    Private Sub Sidebar_ChannelChosen(channel As Networking.Models.DiscordChannel, title As String) Handles _sidebar.ChannelChosen
-        ShowChat(channel, title)
+        Try
+            Await _chatPage.OpenChannelAsync(channel, title)
+        Catch ex As Exception
+            ' An Async Sub must never let an exception escape: it would take the whole app down.
+            Debug.WriteLine("Opening the chat failed: " & ex.ToString())
+        End Try
     End Sub
 
     Public Sub New()
@@ -57,6 +58,7 @@ Public Class Client
         _chatPage.Hide()
 
         _sidebar = New SidebarController(chatList)
+        _chatPage.SetChannelNameLookup(AddressOf _sidebar.FindChannelName)
 
         ' This is an Async Sub: anything thrown here would crash the whole app, so nothing may escape.
         Try

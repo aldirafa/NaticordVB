@@ -39,6 +39,26 @@ Namespace Networking
             Return Parse(result, Function(root) root.EnumerateArray().Select(AddressOf DiscordChannel.FromJson).ToList())
         End Function
 
+        ''' <summary>
+        ''' Messages of a channel, oldest first. With no cursor you get the newest <paramref name="limit"/> (Discord's own order is newest first, and
+        ''' we flip it). <paramref name="before"/> asks for older messages than that id, <paramref name="after"/> for newer ones.
+        ''' </summary>
+        Friend Shared Async Function GetMessagesAsync(channelId As String, Optional limit As Integer = 50,
+                                                      Optional before As String = Nothing, Optional after As String = Nothing,
+                                                      Optional cancellation As CancellationToken = Nothing) As Task(Of Fetched(Of List(Of DiscordMessage)))
+            Dim query As New List(Of KeyValuePair(Of String, String)) From {
+                New KeyValuePair(Of String, String)("limit", Math.Clamp(limit, 1, 100).ToString())
+            }
+            If before IsNot Nothing Then query.Add(New KeyValuePair(Of String, String)("before", before))
+            If after IsNot Nothing Then query.Add(New KeyValuePair(Of String, String)("after", after))
+
+            Dim result = Await API.Instance.RequestAsync("channels/" & channelId & "/messages", HttpMethod.Get, Token, query:=query, cancellation:=cancellation)
+            Return Parse(result, Function(root)
+                                     Return root.EnumerateArray().Select(Function(m) DiscordMessage.FromJson(m)).
+                                         OrderBy(Function(m) m, Comparer(Of DiscordMessage).Create(Function(a, b) Snowflake.Compare(a.Id, b.Id))).ToList()
+                                 End Function)
+        End Function
+
         ''' <summary>Turns a successful response into a typed value. A body that isn't a JSON array is reported as a failure, never thrown.</summary>
         Private Shared Function Parse(Of T)(result As ApiResult, map As Func(Of JsonElement, T)) As Fetched(Of T)
             If Not result.IsSuccess Then Return Fetched(Of T).Fail(result)

@@ -23,7 +23,7 @@ Partial Class ChatPage
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.titleLabel = New System.Windows.Forms.Label()
-        Me.bodyLabel = New System.Windows.Forms.Label()
+        Me.messageView = New NaticordVB.MessageView()
         Me.SuspendLayout()
         '
         'titleLabel
@@ -37,15 +37,13 @@ Partial Class ChatPage
         Me.titleLabel.Text = "Title"
         Me.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'bodyLabel
+        'messageView
         '
-        Me.bodyLabel.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.bodyLabel.ForeColor = System.Drawing.SystemColors.GrayText
-        Me.bodyLabel.Location = New System.Drawing.Point(0, 44)
-        Me.bodyLabel.Name = "bodyLabel"
-        Me.bodyLabel.Size = New System.Drawing.Size(800, 406)
-        Me.bodyLabel.TabIndex = 1
-        Me.bodyLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.messageView.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.messageView.Location = New System.Drawing.Point(0, 44)
+        Me.messageView.Name = "messageView"
+        Me.messageView.Size = New System.Drawing.Size(800, 406)
+        Me.messageView.TabIndex = 1
         '
         'ChatPage
         '
@@ -53,7 +51,7 @@ Partial Class ChatPage
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(800, 450)
-        Me.Controls.Add(Me.bodyLabel)
+        Me.Controls.Add(Me.messageView)
         Me.Controls.Add(Me.titleLabel)
         Me.Name = "ChatPage"
         Me.Text = "ChatPage"
@@ -62,6 +60,6 @@ Partial Class ChatPage
     End Sub
 
     Friend WithEvents titleLabel As System.Windows.Forms.Label
-    Friend WithEvents bodyLabel As System.Windows.Forms.Label
+    Friend WithEvents messageView As MessageView
 
 End Class

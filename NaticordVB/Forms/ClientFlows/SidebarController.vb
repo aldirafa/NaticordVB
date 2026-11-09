@@ -38,6 +38,16 @@ Friend NotInheritable Class SidebarController
         End Get
     End Property
 
+    ''' <summary>The name of a channel we have already loaded (any server's, or a DM), or Nothing. Used to show "#channel" mentions.</summary>
+    Friend Function FindChannelName(channelId As String) As String
+        For Each guildList In _guildChannels.Values
+            Dim match = guildList.FirstOrDefault(Function(c) c.Id = channelId)
+            If match IsNot Nothing Then Return match.Name
+        Next
+        Dim dm = _dms?.FirstOrDefault(Function(c) c.Id = channelId)
+        Return dm?.DisplayName
+    End Function
+
 #Region "Switching tabs"
 
     ''' <summary>Shows the DM list. With <paramref name="forceReload"/> it asks Discord again, otherwise it uses what it already has.</summary>

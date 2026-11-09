@@ -164,7 +164,7 @@ Friend NotInheritable Class ChatListBox
         Dim pad As Integer = LogicalToDeviceUnits(10)
         Dim size As Integer = LogicalToDeviceUnits(32)
         Dim avatar As New Rectangle(bounds.Left + pad, bounds.Top + (bounds.Height - size) \ 2, size, size)
-        DrawAvatar(g, avatar, entry)
+        AvatarPainter.Draw(g, avatar, entry.IconUrl, entry.Title, Font)
 
         Dim textLeft As Integer = avatar.Right + LogicalToDeviceUnits(10)
         Dim textWidth As Integer = bounds.Right - textLeft - pad
@@ -210,32 +210,6 @@ Friend NotInheritable Class ChatListBox
         Dim rect = Rectangle.Inflate(bounds, -LogicalToDeviceUnits(14), -LogicalToDeviceUnits(6))
         TextRenderer.DrawText(g, entry.Title, Font, rect, SystemColors.GrayText,
                               TextFormatFlags.Left Or TextFormatFlags.VerticalCenter Or TextFormatFlags.WordBreak Or TextFormatFlags.NoPrefix)
-    End Sub
-
-    ''' <summary>A round avatar: the downloaded picture, or a grey circle with the initial while it is missing.</summary>
-    Private Sub DrawAvatar(g As Graphics, rect As Rectangle, entry As SidebarEntry)
-        Dim picture As Bitmap = AvatarCache.TryGet(entry.IconUrl)
-        Dim oldMode = g.SmoothingMode
-        g.SmoothingMode = SmoothingMode.AntiAlias
-
-        Using path As New GraphicsPath()
-            path.AddEllipse(rect)
-            If picture IsNot Nothing Then
-                Dim oldInterp = g.InterpolationMode
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic
-                Dim state = g.Save()
-                g.SetClip(path, CombineMode.Replace)
-                g.DrawImage(picture, rect)
-                g.Restore(state)
-                g.InterpolationMode = oldInterp
-            Else
-                g.FillPath(SystemBrushes.ControlDark, path)
-                Dim initial As String = If(String.IsNullOrEmpty(entry.Title), "?", entry.Title.Substring(0, 1).ToUpperInvariant())
-                TextRenderer.DrawText(g, initial, Font, rect, Color.White, TextFormatFlags.HorizontalCenter Or TextFormatFlags.VerticalCenter Or TextFormatFlags.NoPrefix)
-            End If
-        End Using
-
-        g.SmoothingMode = oldMode
     End Sub
 
 #End Region

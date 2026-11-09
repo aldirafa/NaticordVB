@@ -168,4 +168,115 @@ Namespace Networking.Models
         End Function
     End Class
 
+    Friend NotInheritable Class DiscordAttachment
+        Public Property Filename As String = "file"
+        Public Property Url As String = ""
+        Public Property Size As Long
+
+        Friend Shared Function FromJson(el As JsonElement) As DiscordAttachment
+            Dim size As Long
+            Dim v As JsonElement
+            If el.TryGetProperty("size", v) AndAlso v.ValueKind = JsonValueKind.Number Then v.TryGetInt64(size)
+            Return New DiscordAttachment With {
+                .Filename = If(el.GetStr("filename"), "file"),
+                .Url = If(el.GetStr("url"), ""),
+                .Size = size
+            }
+        End Function
+    End Class
+
+    ''' <summary>Only what is needed to show an embed as a link line: its title and address.</summary>
+    Friend NotInheritable Class DiscordEmbed
+        Public Property Title As String
+        Public Property Url As String
+
+        Friend Shared Function FromJson(el As JsonElement) As DiscordEmbed
+            Return New DiscordEmbed With {.Title = el.GetStr("title"), .Url = el.GetStr("url")}
+        End Function
+    End Class
+
+    ''' <summary>Message types from the Docs ("Message > Message Types") that need special treatment.</summary>
+    Friend Enum MessageType As Integer
+        [Default] = 0
+        RecipientAdd = 1
+        RecipientRemove = 2
+        CallStarted = 3
+        ChannelNameChange = 4
+        ChannelIconChange = 5
+        ChannelPinnedMessage = 6
+        UserJoin = 7
+        Reply = 19
+        ChatInputCommand = 20
+        ThreadStarterMessage = 21
+        ContextMenuCommand = 23
+    End Enum
+
+    Friend NotInheritable Class DiscordMessage
+        Public Property Id As String = ""
+        Public Property ChannelId As String = ""
+        Public Property Type As Integer
+        Public Property Content As String = ""
+        Public Property Timestamp As DateTimeOffset?
+        Public Property EditedTimestamp As DateTimeOffset?
+        Public Property Author As New DiscordUser()
+        Public Property Mentions As New List(Of DiscordUser)()
+        Public Property Attachments As New List(Of DiscordAttachment)()
+        Public Property Embeds As New List(Of DiscordEmbed)()
+        Public Property StickerNames As New List(Of String)()
+        ''' <summary>The message this one replies to, when Discord included it. Nothing for ordinary messages, or when it was deleted.</summary>
+        Public Property ReferencedMessage As DiscordMessage
+        ''' <summary>The id of the replied-to message, even when its content is not available.</summary>
+        Public Property ReferencedMessageId As String
+
+        ''' <summary>A normal chat message (as opposed to "X joined", "X pinned a message", call notices...).</summary>
+        Public ReadOnly Property IsRegular As Boolean
+            Get
+                Select Case Type
+                    Case MessageType.Default, MessageType.Reply, MessageType.ChatInputCommand, MessageType.ThreadStarterMessage, MessageType.ContextMenuCommand
+                        Return True
+                    Case Else
+                        Return False
+                End Select
+            End Get
+        End Property
+
+        Private Shared Function ReadTime(el As JsonElement, name As String) As DateTimeOffset?
+            Dim text As String = el.GetStr(name)
+            Dim parsed As DateTimeOffset
+            If text IsNot Nothing AndAlso DateTimeOffset.TryParse(text, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.None, parsed) Then Return parsed
+            Return Nothing
+        End Function
+
+        ''' <summary>Reads a message. <c>depth</c> stops us from following reply chains more than one step.</summary>
+        Friend Shared Function FromJson(el As JsonElement, Optional depth As Integer = 0) As DiscordMessage
+            Dim author As JsonElement
+            Dim message As New DiscordMessage With {
+                .Id = If(el.GetStr("id"), ""),
+                .ChannelId = If(el.GetStr("channel_id"), ""),
+                .Type = el.GetInt("type", 0),
+                .Content = If(el.GetStr("content"), ""),
+                .Timestamp = ReadTime(el, "timestamp"),
+                .EditedTimestamp = ReadTime(el, "edited_timestamp"),
+                .Mentions = el.GetItems("mentions").Select(AddressOf DiscordUser.FromJson).ToList(),
+                .Attachments = el.GetItems("attachments").Select(AddressOf DiscordAttachment.FromJson).ToList(),
+                .Embeds = el.GetItems("embeds").Select(AddressOf DiscordEmbed.FromJson).ToList(),
+                .StickerNames = el.GetItems("sticker_items").Select(Function(s) If(s.GetStr("name"), "sticker")).ToList()
+            }
+
+            If el.TryGetProperty("author", author) AndAlso author.ValueKind = JsonValueKind.Object Then message.Author = DiscordUser.FromJson(author)
+
+            Dim reference As JsonElement
+            If el.TryGetProperty("message_reference", reference) AndAlso reference.ValueKind = JsonValueKind.Object Then
+                message.ReferencedMessageId = reference.GetStr("message_id")
+            End If
+
+            Dim referenced As JsonElement
+            If depth = 0 AndAlso el.TryGetProperty("referenced_message", referenced) AndAlso referenced.ValueKind = JsonValueKind.Object Then
+                message.ReferencedMessage = FromJson(referenced, depth + 1)
+            End If
+
+            Return message
+        End Function
+    End Class
+
 End Namespace
