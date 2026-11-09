@@ -3,6 +3,25 @@ Naticord is a Discord client focused on bringing the best experience possible na
 
 Naticord uses DirectUI and Windows Forms, both bringing a native look to the client. DirectUI is an undocumented language made by Microsoft and was never released publicly. The library used in Naticord for DirectUI is [DirectUI.Net](https://github.com/n1d3v/DirectUI.Net).
 
+> **About this fork:** NaticordVB is a fork of [Naticord/naticord](https://github.com/Naticord/naticord) with the whole codebase rewritten in **VB.NET** and moved from .NET Framework 4.8 to **.NET 10**. Features and look are the same as upstream.
+
+## Building
+Requirements: Windows, the [.NET 10 SDK](https://dotnet.microsoft.com/download).
+
+```powershell
+dotnet build NaticordVB/NaticordVB.vbproj -c Release
+```
+
+The output ends up in `NaticordVB/bin/Release/net10.0-windows/`. The `User Interface` and `ExtResources` folders are copied next to the executable automatically.
+
+**One extra step: the native DirectUI bridge.** `DirectUI.Net` needs a native `dui_bridge.dll`, which is **not included in this repository**. Build the `DUI-Bridge` project from [n1d3v/DirectUI.Net](https://github.com/n1d3v/DirectUI.Net) (needs Visual Studio's *Desktop development with C++* workload) and place the result in:
+
+```
+NaticordVB/Libraries/x64/dui_bridge.dll
+```
+
+Anything inside `NaticordVB/Libraries/` is copied to the output folder on build. Without the DLL the app stops at startup with `dui_bridge.dll not found`.
+
 
 <p align="center">
   <a href="https://www.star-history.com/#Naticord/naticord&Date">
