@@ -41,7 +41,7 @@ Public Class SetupFlowPiece
     End Sub
 
     Private Shared Sub DecideOSSettings()
-        ' Decide the rendering mode that Naticord should use on the titlebar, based on OS and theme settings
+        ' Decide the rendering mode that NaticordVB should use on the titlebar, based on OS and theme settings
         If DetectDwmStatus.IsDwmEnabled() Then
             If DetectOSVersion.IsWindows7To81() Then
                 My.Settings.renderMode = "Aero"
@@ -54,7 +54,7 @@ Public Class SetupFlowPiece
             My.Settings.renderMode = "Composition disabled"
         End If
 
-        ' Decide the toolbar mode that Naticord should use, based on OS (only set default on first run)
+        ' Decide the toolbar mode that NaticordVB should use, based on OS (only set default on first run)
         If DetectOSVersion.IsWindows7To81() Then
             My.Settings.layoutMode = LayoutWindows81
         ElseIf DetectOSVersion.IsWindows10() OrElse DetectOSVersion.IsWindows11() Then

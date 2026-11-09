@@ -48,7 +48,7 @@
 
                 <element layoutpos="client" padding="rect(8rp, 5rp, 8rp, 5rp)" layout="borderlayout()">
                     <edit id="atom(searchBox)" layoutpos="client"
-					    accessible="true" accrole="text" accname="Search bar for Naticord" />
+					    accessible="true" accrole="text" accname="Search bar for NaticordVB" />
                 </element>
 
             </element>

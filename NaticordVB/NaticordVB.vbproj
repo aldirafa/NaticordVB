@@ -13,7 +13,7 @@
     <OptionExplicit>On</OptionExplicit>
     <OptionInfer>On</OptionInfer>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Product>Naticord</Product>
+    <Product>NaticordVB</Product>
     <Description>Discord client built with Windows Forms and DirectUI</Description>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- DirectUI.Net and Windows-Forms-Aero are .NET Framework assemblies; they load fine on modern .NET. -->

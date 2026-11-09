@@ -148,8 +148,8 @@ Namespace Networking.WebSockets
 
                 If rootEl.TryGetProperty("captcha_key", ignored) OrElse rootEl.TryGetProperty("captcha_sitekey", ignored) Then
                     ' You are now stuck in a CAPTCHA loop, good luck!
-                    PostToUi(Sub() MessageBox.Show("Discord is requesting for a CAPTCHA to be completed, Naticord does not support these as of now. Please try again later.",
-                                                   "Naticord", MessageBoxButtons.OK, MessageBoxIcon.Error))
+                    PostToUi(Sub() MessageBox.Show("Discord is requesting for a CAPTCHA to be completed, NaticordVB does not support these as of now. Please try again later.",
+                                                   "NaticordVB", MessageBoxButtons.OK, MessageBoxIcon.Error))
                     Return
                 End If
 

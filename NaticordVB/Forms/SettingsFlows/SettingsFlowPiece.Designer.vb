@@ -44,7 +44,7 @@ Partial Class SettingsFlowPiece
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "SettingsFlowPiece"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Naticord Settings"
+        Me.Text = "NaticordVB Settings"
         Me.ResumeLayout(False)
 
     End Sub

@@ -49,7 +49,7 @@ Partial Class QRLogin
         Me.MaximizeBox = False
         Me.Name = "QRLogin"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Sign into Naticord..."
+        Me.Text = "Sign into NaticordVB..."
         CType(Me.qrPictureBox, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()

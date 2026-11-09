@@ -19,7 +19,7 @@
 						font="gtf(CONTROLPANELSTYLE, 5, 0)"
 						content="Hold on!"/>
 			
-				<element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="Naticord is still loading... You'll see status updates here!" />
+				<element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="NaticordVB is still loading... You'll see status updates here!" />
 			</element>
 		</element>
 	

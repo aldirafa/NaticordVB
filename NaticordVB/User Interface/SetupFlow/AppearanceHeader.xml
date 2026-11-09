@@ -13,9 +13,9 @@
 					margin="rect(0rp, 0rp, 0rp, 2rp)"
 					foreground="gtc(CONTROLPANELSTYLE, 5, 0, 3803)" 
 					font="gtf(CONTROLPANELSTYLE, 5, 0)"
-					content="Make Naticord yours!"/>
+					content="Make NaticordVB yours!"/>
 		
-			<element contentalign="wrapleft" content="Customize Naticord to your liking, this allows for a modern look, or go old-school and use skeuomorphic icons instead! The choice is yours." />
+			<element contentalign="wrapleft" content="Customize NaticordVB to your liking, this allows for a modern look, or go old-school and use skeuomorphic icons instead! The choice is yours." />
 		</element>
 	
 	</HWNDElement>

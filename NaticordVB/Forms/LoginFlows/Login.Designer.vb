@@ -62,7 +62,7 @@ Partial Class Login
         Me.MaximizeBox = False
         Me.Name = "Login"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Welcome to Naticord!"
+        Me.Text = "Welcome to NaticordVB!"
         CType(Me.loginBanner, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()

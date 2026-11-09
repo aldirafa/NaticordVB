@@ -209,7 +209,7 @@ Partial Class Client
         '
         Me.logOutStripItem.Name = "logOutStripItem"
         Me.logOutStripItem.Size = New System.Drawing.Size(180, 22)
-        Me.logOutStripItem.Text = "Log out of Naticord"
+        Me.logOutStripItem.Text = "Log out of NaticordVB"
         '
         'Client
         '
@@ -225,7 +225,7 @@ Partial Class Client
         Me.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.Name = "Client"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Naticord"
+        Me.Text = "NaticordVB"
         Me.buttonPanel.ResumeLayout(False)
         CType(Me.avatarBox, System.ComponentModel.ISupportInitialize).EndInit()
         Me.accountContext.ResumeLayout(False)

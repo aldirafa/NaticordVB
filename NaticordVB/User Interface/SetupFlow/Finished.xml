@@ -15,8 +15,8 @@
 					font="gtf(CONTROLPANELSTYLE, 5, 0)"
 					content="You're all set!"/>
 		            
-			<element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="You have finished setting up Naticord! You can now proceed to the client to use Naticord." />
-            <element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="We hope you enjoy using Naticord! If you have any suggestions, feel free to ask us on our GitHub page! We try to replicate most of Discord, including some quality-of-life features." />
+			<element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="You have finished setting up NaticordVB! You can now proceed to the client to use NaticordVB." />
+            <element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="We hope you enjoy using NaticordVB! If you have any suggestions, feel free to ask us on our GitHub page! We try to replicate most of Discord, including some quality-of-life features." />
 		</element>
 	
 	</HWNDElement>

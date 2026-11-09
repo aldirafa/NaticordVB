@@ -14,7 +14,7 @@ Public Class Login
     Private Async Function SignInSequence() As Task
         Dim dscToken As String = loginDuiRenderer.Element("editToken").GetText()
         If String.IsNullOrEmpty(dscToken) Then
-            MessageBox.Show("You have not entered a Discord token, put one in and try again.", "Naticord", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            MessageBox.Show("You have not entered a Discord token, put one in and try again.", "NaticordVB", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return
         End If
 
@@ -26,7 +26,7 @@ Public Class Login
             Debug.WriteLine("Token is not correct and hasn't been saved to local settings.")
             Dim forceBox As DialogResult = MessageBox.Show(
                 "Your token is incorrect, please verify that you have entered it correctly and try again. If you are sure this is the right token, click 'OK' to force it to save.",
-                "Naticord",
+                "NaticordVB",
                 MessageBoxButtons.OKCancel,
                 MessageBoxIcon.Error)
 

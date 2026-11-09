@@ -88,7 +88,7 @@ Partial Class AppearancePage
         Me.layoutNoticeLabel.Name = "layoutNoticeLabel"
         Me.layoutNoticeLabel.Size = New System.Drawing.Size(401, 26)
         Me.layoutNoticeLabel.TabIndex = 8
-        Me.layoutNoticeLabel.Text = "You might want to configure how Naticord handles the spacing between elements." & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "This is based on your operating system, and not your system theme."
+        Me.layoutNoticeLabel.Text = "You might want to configure how NaticordVB handles the spacing between elements." & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "This is based on your operating system, and not your system theme."
         '
         'modernRadio
         '

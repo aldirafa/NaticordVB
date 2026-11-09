@@ -119,8 +119,8 @@ Public Class Client
         If userInfo Is Nothing Then Return
 
         If userInfo.Contains("Unauthorized") Then
-            MessageBox.Show("Your token has expired or is invalid. Naticord will sign you out and you will need to sign in again.",
-                            "Naticord", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Your token has expired or is invalid. NaticordVB will sign you out and you will need to sign in again.",
+                            "NaticordVB", MessageBoxButtons.OK, MessageBoxIcon.Error)
 
             ' Wipe all Discord properties
             ClearDiscordSession()
@@ -170,10 +170,10 @@ Public Class Client
         ' Wipe all Discord properties
         ClearDiscordSession()
 
-        Dim resetAllDlg As DialogResult = MessageBox.Show("Do you want to reset all of your Naticord preferences too?",
-                                                          "Naticord", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+        Dim resetAllDlg As DialogResult = MessageBox.Show("Do you want to reset all of your NaticordVB preferences too?",
+                                                          "NaticordVB", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
         If resetAllDlg = DialogResult.Yes Then
-            ' Wipe all of the Naticord settings to their defaults
+            ' Wipe all of the NaticordVB settings to their defaults
             My.Settings.renderMode = Nothing
             My.Settings.hasCompletedSetup = False
             My.Settings.iconStyle = IconStyleSkeuomorphic

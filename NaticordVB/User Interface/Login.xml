@@ -30,7 +30,7 @@
 					margin="rect(0rp, 0rp, 0rp, 2rp)"
 					foreground="gtc(CONTROLPANELSTYLE, 5, 0, 3803)" 
 					font="gtf(CONTROLPANELSTYLE, 5, 0)"
-					content="Welcome to Naticord!"/>
+					content="Welcome to NaticordVB!"/>
 		
 			<element contentalign="wrapleft" margin="rect(0rp, 0rp, 0rp, 8rp)" content="Once you sign into Discord, we'll continue from there." />
 			
@@ -46,7 +46,7 @@
 						content="icon(99, sysmetric(49), sysmetric(50), library(imageres.dll))" />
 				<element layoutpos="client" contentalign="wrapleft"
 						margin="rect(6rp,0rp,0rp,0rp)"
-						content="Naticord is completely safe to use, your token and data is only sent to Discord's servers." />
+						content="NaticordVB is completely safe to use, your token and data is only sent to Discord's servers." />
 			</element>
 		</element>
 
@@ -54,7 +54,7 @@
 			<element id="atom(labelVersionMuted)" layoutpos="left"
 					contentalign="middleleft" content="Version 1.0.0b1"/>
 			<CCPushButton id="atom(btnSignIn)" layoutpos="right"
-					content="Sign into Naticord!"
+					content="Sign into NaticordVB!"
 					accessible="true" shortcut="auto"/>
 			<CCPushButton id="atom(btnQrLaunch)" layoutpos="right"
 					content="Use QR instead"
