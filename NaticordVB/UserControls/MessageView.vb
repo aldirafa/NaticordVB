@@ -13,6 +13,8 @@ Friend NotInheritable Class MessageView
 
     ''' <summary>The "Load earlier messages" row was clicked.</summary>
     Friend Event LoadEarlierRequested()
+    ''' <summary>The user chose "Reply" on a message.</summary>
+    Friend Event ReplyRequested(message As DiscordMessage)
     ''' <summary>The status text shown instead of messages ("Loading...", an error) was clicked; used for "try again".</summary>
     Friend Event NoticeClicked()
 
@@ -148,6 +150,11 @@ Friend NotInheritable Class MessageView
             Dim moved = _items.FirstOrDefault(Function(i) i.Message IsNot Nothing AndAlso i.Message.Id = anchorId)
             If moved IsNot Nothing Then SetScroll(moved.Top - offset)
         End If
+    End Sub
+
+    ''' <summary>Jumps to the newest message.</summary>
+    Friend Sub ScrollToBottom()
+        SetScroll(MaxScroll)
     End Sub
 
     ''' <summary>Copies the picked message's text to the clipboard. Returns False when nothing is picked or there is nothing to copy.</summary>
@@ -533,7 +540,7 @@ Friend NotInheritable Class MessageView
             Case ItemKind.DaySeparator : DrawDaySeparator(g, item, top, width)
             Case ItemKind.LoadEarlier
                 Dim rect As New Rectangle(0, top, width, item.Height)
-                TextRenderer.DrawText(g, item.Text, _linkFont, rect, SystemColors.HotTrack,
+                FallbackText.DrawText(g, item.Text, _linkFont, rect, SystemColors.HotTrack,
                                       TextFormatFlags.HorizontalCenter Or TextFormatFlags.VerticalCenter Or TextFormatFlags.NoPrefix)
             Case ItemKind.System
                 DrawLines(g, item.Lines, Font, TextLeft(), top + LogicalToDeviceUnits(5), ContentWidth(), SystemColors.GrayText)
@@ -552,7 +559,7 @@ Friend NotInheritable Class MessageView
             g.DrawLine(pen, margin, middle, Math.Max(margin, textRect.Left - gap), middle)
             g.DrawLine(pen, Math.Min(width - margin, textRect.Right + gap), middle, width - margin, middle)
         End Using
-        TextRenderer.DrawText(g, item.Text, _smallFont, textRect, SystemColors.GrayText, LineFlags)
+        FallbackText.DrawText(g, item.Text, _smallFont, textRect, SystemColors.GrayText, LineFlags)
     End Sub
 
     Private Sub DrawMessage(g As Graphics, item As ViewItem, top As Integer, width As Integer)
@@ -568,7 +575,7 @@ Friend NotInheritable Class MessageView
 
         If item.ReplyText IsNot Nothing Then
             Dim replyRect As New Rectangle(left, top + item.ReplyY, contentW, _smallFont.Height)
-            TextRenderer.DrawText(g, item.ReplyText, _smallFont, replyRect, SystemColors.GrayText, LineFlags)
+            FallbackText.DrawText(g, item.ReplyText, _smallFont, replyRect, SystemColors.GrayText, LineFlags)
         End If
 
         If item.IsHead Then
@@ -576,14 +583,14 @@ Friend NotInheritable Class MessageView
             Dim avatarRect As New Rectangle(LogicalToDeviceUnits(16), top + item.HeaderY, avatarSize, avatarSize)
             AvatarPainter.Draw(g, avatarRect, DiscordCdn.UserAvatarUrl(message.Author, 64), message.Author.DisplayName, Font)
 
-            Dim nameSize As Size = TextRenderer.MeasureText(message.Author.DisplayName, _boldFont, New Size(contentW, _boldFont.Height), LineFlags)
-            Dim nameRect As New Rectangle(left, top + item.HeaderY, Math.Min(nameSize.Width, contentW), _boldFont.Height)
-            TextRenderer.DrawText(g, message.Author.DisplayName, _boldFont, nameRect, SystemColors.WindowText, LineFlags)
+            Dim nameWidth As Integer = FallbackText.MeasureWidth(message.Author.DisplayName, _boldFont)
+            Dim nameRect As New Rectangle(left, top + item.HeaderY, Math.Min(nameWidth, contentW), _boldFont.Height)
+            FallbackText.DrawText(g, message.Author.DisplayName, _boldFont, nameRect, SystemColors.WindowText, LineFlags)
 
             Dim timeLeft As Integer = nameRect.Right + LogicalToDeviceUnits(8)
             If timeLeft < left + contentW Then
                 Dim timeRect As New Rectangle(timeLeft, top + item.HeaderY + (_boldFont.Height - _smallFont.Height) \ 2, left + contentW - timeLeft, _smallFont.Height)
-                TextRenderer.DrawText(g, item.TimeText, _smallFont, timeRect, SystemColors.GrayText, LineFlags)
+                FallbackText.DrawText(g, item.TimeText, _smallFont, timeRect, SystemColors.GrayText, LineFlags)
             End If
         End If
 
@@ -603,7 +610,7 @@ Friend NotInheritable Class MessageView
         For Each line In lines
             If line.Length > 0 Then
                 ' A few pixels of slack so rounding never clips the last letter.
-                TextRenderer.DrawText(g, line, lineFont, New Rectangle(left, y, width + 8, lineFont.Height), color,
+                FallbackText.DrawText(g, line, lineFont, New Rectangle(left, y, width + 8, lineFont.Height), color,
                                       TextFormatFlags.Left Or TextFormatFlags.Top Or TextFormatFlags.SingleLine Or TextFormatFlags.NoPadding Or TextFormatFlags.NoPrefix)
             End If
             y += lineFont.Height
@@ -688,6 +695,12 @@ Friend NotInheritable Class MessageView
 
     Private Sub ShowContextMenu(location As Point)
         Using menu As New NativeContextGenerator()
+            Dim picked = SelectedMessage
+            Dim reply As New ToolStripMenuItem("Reply")
+            reply.Enabled = picked IsNot Nothing
+            AddHandler reply.Click, Sub(s, a) RaiseEvent ReplyRequested(picked)
+            menu.Items.Add(reply)
+
             Dim copy As New ToolStripMenuItem("Copy text")
             copy.Enabled = SelectedMessage IsNot Nothing AndAlso (Not String.IsNullOrWhiteSpace(SelectedMessage.Content) OrElse SelectedMessage.Attachments.Count > 0)
             AddHandler copy.Click, Sub(s, a) CopySelected()

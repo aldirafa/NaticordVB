@@ -443,6 +443,13 @@ Public Class AeroLabel
 
     Protected Overrides Sub OnPaint(e As PaintEventArgs)
         If DesignMode OrElse (_compositionDisabled AndAlso BackColor.A <> 0) Then
+            ' Text in a script the font lacks (Sundanese...) is drawn piece by piece in the right fonts.
+            If FallbackText.NeedsFallback(Text, Font) Then
+                Dim area As New Rectangle(Padding.Left, Padding.Top, Width - Padding.Horizontal, Height - Padding.Vertical)
+                FallbackText.DrawText(e.Graphics, Text, Font, area, ForeColor, BuildFormatFlags() Or TextFormatFlags.EndEllipsis)
+                Return
+            End If
+
             Using sf As StringFormat = BuildStringFormat()
                 Using brush As New SolidBrush(ForeColor)
                     e.Graphics.DrawString(Text, Font, brush,

@@ -12,7 +12,7 @@ Public Class Client
     Private _chatPage As ChatPage
 
     Private WithEvents _sidebar As SidebarController
-    Private ReadOnly _dmRefreshTimer As New Timer() With {.Interval = 60000}
+    Private ReadOnly _dmRefreshTimer As New Timer() With {.Interval = 30000}
 
     ''' <summary>Puts a page inside contentPanel, filling it.</summary>
     Private Sub AddToContent(page As Form)
@@ -59,6 +59,7 @@ Public Class Client
 
         _sidebar = New SidebarController(chatList)
         _chatPage.SetChannelNameLookup(AddressOf _sidebar.FindChannelName)
+        AddHandler _chatPage.ChannelRead, Sub(channelId) _sidebar.RefreshView()
 
         ' This is an Async Sub: anything thrown here would crash the whole app, so nothing may escape.
         Try

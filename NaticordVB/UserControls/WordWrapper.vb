@@ -18,7 +18,7 @@ Friend NotInheritable Class WordWrapper
 
     Private Function Measure(text As String) As Integer
         If text.Length = 0 Then Return 0
-        Return TextRenderer.MeasureText(text, _font, New Size(Integer.MaxValue, Integer.MaxValue), MeasureFlags).Width
+        Return FallbackText.MeasureWidth(text, _font)
     End Function
 
     ''' <summary>The width of a word (cached; very long strings are not cached).</summary>

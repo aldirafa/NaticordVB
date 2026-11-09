@@ -274,10 +274,15 @@ Friend NotInheritable Class ThemedText
 
         Dim renderer As VS.VisualStyleRenderer = GetRenderer()
         If renderer IsNot Nothing Then
-            Dim hr As Integer = DrawThemeTextEx(renderer.Handle, _textHdc, 0, 0,
-                                                _text, -1, CInt(_formatFlags), paddedBounds, dttOpts)
-            If hr <> 0 Then
-                Marshal.ThrowExceptionForHR(hr)
+            If FallbackText.NeedsFallback(_text, _font) Then
+                ' Some characters need another font (Sundanese, for one): draw the text in pieces, each in the right font.
+                DrawRunsThemed(renderer.Handle, paddedBounds, dttOpts)
+            Else
+                Dim hr As Integer = DrawThemeTextEx(renderer.Handle, _textHdc, 0, 0,
+                                                    _text, -1, CInt(_formatFlags), paddedBounds, dttOpts)
+                If hr <> 0 Then
+                    Marshal.ThrowExceptionForHR(hr)
+                End If
             End If
         Else
             Using g As Graphics = Graphics.FromHdc(_textHdc)
@@ -292,5 +297,38 @@ Friend NotInheritable Class ThemedText
 
         Return _textHdc
     End Function
+
+    ''' <summary>Draws the text piece by piece when different characters need different fonts, keeping the label's alignment.</summary>
+    Private Sub DrawRunsThemed(hTheme As IntPtr, bounds As NativeRect, options As DttOpts)
+        Dim runs = FallbackText.Split(_text, _font)
+        Dim total As Integer = runs.Sum(Function(r) r.Width)
+
+        Dim x As Integer = bounds.Left
+        If (_formatFlags And TextFormatFlags.HorizontalCenter) <> 0 Then
+            x = bounds.Left + (bounds.Width - total) \ 2
+        ElseIf (_formatFlags And TextFormatFlags.Right) <> 0 Then
+            x = bounds.Right - total
+        End If
+
+        Dim y As Integer = bounds.Top
+        If (_formatFlags And TextFormatFlags.VerticalCenter) <> 0 Then
+            y = bounds.Top + (bounds.Height - _font.Height) \ 2
+        ElseIf (_formatFlags And TextFormatFlags.Bottom) <> 0 Then
+            y = bounds.Bottom - _font.Height
+        End If
+
+        Const pieceFlags As TextFormatFlags = TextFormatFlags.Left Or TextFormatFlags.Top Or TextFormatFlags.SingleLine Or TextFormatFlags.NoPrefix Or TextFormatFlags.NoPadding
+        For Each piece In runs
+            Dim hPieceFont As IntPtr = piece.RunFont.ToHfont()
+            Dim previous As IntPtr = SelectObject(_textHdc, hPieceFont)
+            Dim pieceY As Integer = y + FallbackText.BaselineShift(_font, piece.RunFont)
+            Dim rect As New NativeRect(x, pieceY, x + piece.Width + 4, pieceY + piece.RunFont.Height + 2)
+            Dim hr As Integer = DrawThemeTextEx(hTheme, _textHdc, 0, 0, piece.Text, -1, CInt(pieceFlags), rect, options)
+            SelectObject(_textHdc, previous)
+            DeleteObject(hPieceFont)
+            If hr <> 0 Then Marshal.ThrowExceptionForHR(hr)
+            x += piece.Width
+        Next
+    End Sub
 
 End Class

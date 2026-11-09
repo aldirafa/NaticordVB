@@ -38,6 +38,15 @@ Friend NotInheritable Class SidebarController
         End Get
     End Property
 
+    ''' <summary>Redraws the list we are showing from what we already have (no network), e.g. after a chat was marked read.</summary>
+    Friend Sub RefreshView()
+        If _mode = SidebarMode.DirectMessages Then
+            If _dms IsNot Nothing Then Render()
+        ElseIf _currentGuild IsNot Nothing AndAlso _guildChannels.ContainsKey(_currentGuild.Id) Then
+            Render()
+        End If
+    End Sub
+
     ''' <summary>The name of a channel we have already loaded (any server's, or a DM), or Nothing. Used to show "#channel" mentions.</summary>
     Friend Function FindChannelName(channelId As String) As String
         For Each guildList In _guildChannels.Values
@@ -69,6 +78,11 @@ Friend NotInheritable Class SidebarController
 
         If fetched.IsSuccess Then
             _dms = fetched.Value
+            ' A chat seen for the first time counts as read; only newer messages will mark it unread.
+            For Each channel In _dms
+                ReadTracker.Observe(channel.Id, channel.LastMessageId)
+            Next
+            ReadTracker.Save()
             Render()
         ElseIf _dms Is Nothing Then
             ShowNotice(fetched.FriendlyError & " Click to try again.", "retry-dms")
@@ -113,6 +127,10 @@ Friend NotInheritable Class SidebarController
 
         If fetched.IsSuccess Then
             _guildChannels(guild.Id) = fetched.Value
+            For Each channel In fetched.Value.Where(Function(c) c.IsChat)
+                ReadTracker.Observe(channel.Id, channel.LastMessageId)
+            Next
+            ReadTracker.Save()
             Render()
         Else
             ShowNotice(fetched.FriendlyError & " Click to try again.", "retry-guild", withBack:=True)
@@ -133,6 +151,7 @@ Friend NotInheritable Class SidebarController
                     .Key = channel.Id,
                     .Title = channel.DisplayName,
                     .Subtitle = DescribeDirect(channel),
+                    .IsUnread = ReadTracker.IsUnread(channel.Id, channel.LastMessageId),
                     .IconUrl = DiscordCdn.ChannelIconUrl(channel, 64),
                     .Tag = channel})
             Next
@@ -182,7 +201,9 @@ Friend NotInheritable Class SidebarController
     End Function
 
     Private Shared Function ChannelEntry(channel As DiscordChannel) As SidebarEntry
-        Return New SidebarEntry With {.Kind = EntryKind.Channel, .Key = channel.Id, .Title = If(channel.Name, "unnamed"), .Tag = channel}
+        Return New SidebarEntry With {
+            .Kind = EntryKind.Channel, .Key = channel.Id, .Title = If(channel.Name, "unnamed"), .Tag = channel,
+            .IsUnread = ReadTracker.IsUnread(channel.Id, channel.LastMessageId)}
     End Function
 
     Private Function BackEntry() As SidebarEntry

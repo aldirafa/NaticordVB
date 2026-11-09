@@ -30,6 +30,9 @@ Friend NotInheritable Class SidebarEntry
     ''' <summary>The model object behind the row (a channel or a guild).</summary>
     Public Property Tag As Object
 
+    ''' <summary>Something newer than what you last saw here: the title is drawn bold, with a dot.</summary>
+    Public Property IsUnread As Boolean
+
     Public ReadOnly Property IsSelectable As Boolean
         Get
             Return Kind <> EntryKind.Category
@@ -167,42 +170,63 @@ Friend NotInheritable Class ChatListBox
         AvatarPainter.Draw(g, avatar, entry.IconUrl, entry.Title, Font)
 
         Dim textLeft As Integer = avatar.Right + LogicalToDeviceUnits(10)
-        Dim textWidth As Integer = bounds.Right - textLeft - pad
+        ' Leave room on the right for the unread dot.
+        Dim textWidth As Integer = bounds.Right - textLeft - pad - If(entry.IsUnread, LogicalToDeviceUnits(14), 0)
 
-        If String.IsNullOrEmpty(entry.Subtitle) Then
-            Dim rect As New Rectangle(textLeft, bounds.Top, textWidth, bounds.Height)
-            TextRenderer.DrawText(g, entry.Title, Font, rect, SystemColors.WindowText, TextFlags)
-        Else
-            Dim half As Integer = bounds.Height \ 2
-            Dim titleRect As New Rectangle(textLeft, bounds.Top + LogicalToDeviceUnits(4), textWidth, half - LogicalToDeviceUnits(4))
-            Dim subRect As New Rectangle(textLeft, bounds.Top + half, textWidth, half - LogicalToDeviceUnits(4))
-            TextRenderer.DrawText(g, entry.Title, Font, titleRect, SystemColors.WindowText, TextFlags)
-            Using small As New Font(Font.FontFamily, Math.Max(7.0F, Font.Size - 1.0F))
-                TextRenderer.DrawText(g, entry.Subtitle, small, subRect, SystemColors.GrayText, TextFlags)
-            End Using
-        End If
+        Using titleFont As Font = If(entry.IsUnread, New Font(Font, FontStyle.Bold), Nothing)
+            Dim drawFont As Font = If(titleFont, Font)
+            If String.IsNullOrEmpty(entry.Subtitle) Then
+                Dim rect As New Rectangle(textLeft, bounds.Top, textWidth, bounds.Height)
+                FallbackText.DrawText(g, entry.Title, drawFont, rect, SystemColors.WindowText, TextFlags)
+            Else
+                Dim half As Integer = bounds.Height \ 2
+                Dim titleRect As New Rectangle(textLeft, bounds.Top + LogicalToDeviceUnits(4), textWidth, half - LogicalToDeviceUnits(4))
+                Dim subRect As New Rectangle(textLeft, bounds.Top + half, textWidth, half - LogicalToDeviceUnits(4))
+                FallbackText.DrawText(g, entry.Title, drawFont, titleRect, SystemColors.WindowText, TextFlags)
+                Using small As New Font(Font.FontFamily, Math.Max(7.0F, Font.Size - 1.0F))
+                    FallbackText.DrawText(g, entry.Subtitle, small, subRect, SystemColors.GrayText, TextFlags)
+                End Using
+            End If
+        End Using
+
+        If entry.IsUnread Then DrawUnreadDot(g, bounds, pad)
     End Sub
 
     Private Sub DrawChannelRow(g As Graphics, bounds As Rectangle, entry As SidebarEntry)
         Dim left As Integer = bounds.Left + LogicalToDeviceUnits(14)
         Dim hash As New Rectangle(left, bounds.Top, LogicalToDeviceUnits(16), bounds.Height)
-        TextRenderer.DrawText(g, "#", Font, hash, SystemColors.GrayText, TextFlags)
+        FallbackText.DrawText(g, "#", Font, hash, SystemColors.GrayText, TextFlags)
 
-        Dim rect As New Rectangle(hash.Right + LogicalToDeviceUnits(2), bounds.Top, bounds.Right - hash.Right - LogicalToDeviceUnits(12), bounds.Height)
-        TextRenderer.DrawText(g, entry.Title, Font, rect, SystemColors.WindowText, TextFlags)
+        Dim reserved As Integer = If(entry.IsUnread, LogicalToDeviceUnits(14), 0)
+        Dim rect As New Rectangle(hash.Right + LogicalToDeviceUnits(2), bounds.Top, bounds.Right - hash.Right - LogicalToDeviceUnits(12) - reserved, bounds.Height)
+        Using titleFont As Font = If(entry.IsUnread, New Font(Font, FontStyle.Bold), Nothing)
+            FallbackText.DrawText(g, entry.Title, If(titleFont, Font), rect, SystemColors.WindowText, TextFlags)
+        End Using
+
+        If entry.IsUnread Then DrawUnreadDot(g, bounds, LogicalToDeviceUnits(10))
+    End Sub
+
+    ''' <summary>A small round dot at the right edge of the row: this chat has something you haven't seen.</summary>
+    Private Sub DrawUnreadDot(g As Graphics, bounds As Rectangle, rightPad As Integer)
+        Dim size As Integer = LogicalToDeviceUnits(8)
+        Dim dot As New Rectangle(bounds.Right - rightPad - size, bounds.Top + (bounds.Height - size) \ 2, size, size)
+        Dim oldMode = g.SmoothingMode
+        g.SmoothingMode = SmoothingMode.AntiAlias
+        g.FillEllipse(SystemBrushes.Highlight, dot)
+        g.SmoothingMode = oldMode
     End Sub
 
     Private Sub DrawCategoryRow(g As Graphics, bounds As Rectangle, entry As SidebarEntry)
         Dim rect As New Rectangle(bounds.Left + LogicalToDeviceUnits(12), bounds.Top + LogicalToDeviceUnits(6), bounds.Width - LogicalToDeviceUnits(20), bounds.Height - LogicalToDeviceUnits(6))
         Using small As New Font(Font.FontFamily, Math.Max(7.0F, Font.Size - 1.0F), FontStyle.Bold)
-            TextRenderer.DrawText(g, entry.Title.ToUpperInvariant(), small, rect, SystemColors.GrayText, TextFlags)
+            FallbackText.DrawText(g, entry.Title.ToUpperInvariant(), small, rect, SystemColors.GrayText, TextFlags)
         End Using
     End Sub
 
     Private Sub DrawBackRow(g As Graphics, bounds As Rectangle, entry As SidebarEntry)
         Dim rect As New Rectangle(bounds.Left + LogicalToDeviceUnits(12), bounds.Top, bounds.Width - LogicalToDeviceUnits(20), bounds.Height)
         Using bold As New Font(Font, FontStyle.Bold)
-            TextRenderer.DrawText(g, ChrW(&H2039) & "  " & entry.Title, bold, rect, SystemColors.WindowText, TextFlags)
+            FallbackText.DrawText(g, ChrW(&H2039) & "  " & entry.Title, bold, rect, SystemColors.WindowText, TextFlags)
         End Using
     End Sub
 

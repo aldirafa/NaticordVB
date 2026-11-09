@@ -23,8 +23,9 @@ Friend Module AvatarPainter
                 g.InterpolationMode = oldInterpolation
             Else
                 g.FillPath(SystemBrushes.ControlDark, path)
-                Dim initial As String = If(String.IsNullOrEmpty(title), "?", title.Substring(0, 1).ToUpperInvariant())
-                TextRenderer.DrawText(g, initial, font, rect, Color.White,
+                ' First letter as a whole "text element": keeps surrogate pairs and letters with combining marks together.
+                Dim initial As String = If(String.IsNullOrEmpty(title), "?", Globalization.StringInfo.GetNextTextElement(title).ToUpperInvariant())
+                FallbackText.DrawText(g, initial, font, rect, Color.White,
                                       TextFormatFlags.HorizontalCenter Or TextFormatFlags.VerticalCenter Or TextFormatFlags.NoPrefix)
             End If
         End Using

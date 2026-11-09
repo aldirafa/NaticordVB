@@ -59,6 +59,41 @@ Namespace Networking
                                  End Function)
         End Function
 
+        ''' <summary>
+        ''' Sends a message, optionally as a reply. Never retried automatically, so a message can't be sent twice; on a timeout we
+        ''' can't know whether it went through, and the caller says so.
+        ''' </summary>
+        Friend Shared Async Function SendMessageAsync(channelId As String, content As String,
+                                                      Optional replyToMessageId As String = Nothing, Optional guildId As String = Nothing,
+                                                      Optional cancellation As CancellationToken = Nothing) As Task(Of Fetched(Of DiscordMessage))
+            ' Discord clients send a snowflake made from the current time as the nonce.
+            Dim nonce As String = ((DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 1420070400000L) << 22).ToString()
+            Dim body As New Dictionary(Of String, Object) From {
+                {"content", content},
+                {"nonce", nonce},
+                {"tts", False}
+            }
+
+            If replyToMessageId IsNot Nothing Then
+                Dim reference As New Dictionary(Of String, Object) From {
+                    {"message_id", replyToMessageId},
+                    {"channel_id", channelId},
+                    {"fail_if_not_exists", False}
+                }
+                If guildId IsNot Nothing Then reference("guild_id") = guildId
+                body("message_reference") = reference
+            End If
+
+            Dim result = Await API.Instance.RequestAsync("channels/" & channelId & "/messages", HttpMethod.Post, Token, data:=body, cancellation:=cancellation)
+            If Not result.IsSuccess Then Return Fetched(Of DiscordMessage).Fail(result)
+
+            Dim json As JsonElement? = result.ParseJson()
+            If Not json.HasValue OrElse json.Value.ValueKind <> JsonValueKind.Object Then
+                Return Fetched(Of DiscordMessage).Fail(ApiResult.Failure(ApiError.Other, "Unexpected response from Discord."))
+            End If
+            Return Fetched(Of DiscordMessage).Ok(result, DiscordMessage.FromJson(json.Value))
+        End Function
+
         ''' <summary>Turns a successful response into a typed value. A body that isn't a JSON array is reported as a failure, never thrown.</summary>
         Private Shared Function Parse(Of T)(result As ApiResult, map As Func(Of JsonElement, T)) As Fetched(Of T)
             If Not result.IsSuccess Then Return Fetched(Of T).Fail(result)
