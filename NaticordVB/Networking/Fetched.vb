@@ -28,14 +28,7 @@ Namespace Networking
         ''' <summary>A short, user-facing reason for a failure.</summary>
         Public ReadOnly Property FriendlyError As String
             Get
-                Select Case Result.Error
-                    Case ApiError.Offline, ApiError.Timeout : Return "Can't reach Discord."
-                    Case ApiError.Unauthorized : Return "Your session has expired. Sign in again."
-                    Case ApiError.Forbidden : Return "You don't have access to this."
-                    Case ApiError.RateLimited : Return "Discord is asking us to slow down."
-                    Case ApiError.Cancelled : Return "Cancelled."
-                    Case Else : Return "Something went wrong (" & Result.ErrorMessage & ")."
-                End Select
+                Return Result.FriendlyError
             End Get
         End Property
 

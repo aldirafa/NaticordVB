@@ -39,8 +39,11 @@ Anything inside `NaticordVB/Libraries/` is copied to the output folder on build.
   - Signing in using a QR code: ✔️
   - Signing in using e-mail and password: ❌ ([See why...](https://github.com/Naticord/naticord/tree/dev#why-cant-you-login-in-using-an-e-mail-and-password))
 - Client
+  - Direct messages and servers (read and reply, reply to a specific message): ✔️
+  - Unread marks: ➖ (Tracked on this PC only, real sync needs the Gateway)
+  - Status (online / idle / do not disturb / invisible) and custom status with an emoji: ✔️
+  - Live updates (Gateway), markdown, voice channels: ❌ (Planned)
   - User interface: ➖ (Work-in-progress)
-  - Discord functionality: ➖ (Work-in-progress)
 - Miscellaneous
   - Work-in-progress, list will come in the future!
 - OS support (Windows-only)

@@ -67,7 +67,100 @@ Public Class Client
         Catch ex As Exception
             Debug.WriteLine("SetUserInformation failed: " & ex.ToString())
         End Try
+
+        Try
+            Await LoadPresenceAsync()
+        Catch ex As Exception
+            Debug.WriteLine("Loading the status failed: " & ex.ToString())
+        End Try
     End Sub
+
+#Region "Status"
+
+    ' What we last knew about your status; the menu's check marks follow it.
+    Private _presence As New Networking.Models.PresenceSettings()
+
+    Private Async Function LoadPresenceAsync() As Task
+        Dim fetched = Await UserSettingsService.GetPresenceAsync()
+        If IsDisposed OrElse Not fetched.IsSuccess Then Return
+        _presence = fetched.Value
+        UpdateStatusMenu()
+    End Function
+
+    Private Sub UpdateStatusMenu()
+        onlineToolStripMenuItem.Checked = _presence.Status = UserSettingsService.Online
+        busyToolStripMenuItem.Checked = _presence.Status = UserSettingsService.DoNotDisturb
+        idleToolStripMenuItem.Checked = _presence.Status = UserSettingsService.Idle
+        offlineToolStripMenuItem.Checked = _presence.Status = UserSettingsService.Invisible
+
+        If _presence.Custom Is Nothing Then
+            customStatusStripItem.Text = "Set custom status..."
+        Else
+            Dim shown As String = _presence.Custom.ToString()
+            If shown.Length > 28 Then shown = shown.Substring(0, 28) & ChrW(&H2026)
+            customStatusStripItem.Text = "Custom status: " & shown
+        End If
+    End Sub
+
+    Private Sub ShowProblem(what As String, result As ApiResult)
+        MessageBox.Show(what & ". " & result.FriendlyError, "NaticordVB", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+    End Sub
+
+    Private Async Sub ChangeStatus(status As String)
+        Try
+            Dim result = Await UserSettingsService.SetStatusAsync(status)
+            If IsDisposed Then Return
+
+            If result.IsSuccess Then
+                _presence.Status = status
+                UpdateStatusMenu()
+            Else
+                ' The check mark stays on the old status: nothing changed.
+                ShowProblem("Couldn't change your status", result)
+            End If
+        Catch ex As Exception
+            Debug.WriteLine("Changing the status failed: " & ex.ToString())
+        End Try
+    End Sub
+
+    Private Sub onlineToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles onlineToolStripMenuItem.Click
+        ChangeStatus(UserSettingsService.Online)
+    End Sub
+
+    Private Sub busyToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles busyToolStripMenuItem.Click
+        ChangeStatus(UserSettingsService.DoNotDisturb)
+    End Sub
+
+    Private Sub idleToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles idleToolStripMenuItem.Click
+        ChangeStatus(UserSettingsService.Idle)
+    End Sub
+
+    Private Sub offlineToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles offlineToolStripMenuItem.Click
+        ChangeStatus(UserSettingsService.Invisible)
+    End Sub
+
+    Private Async Sub customStatusStripItem_Click(sender As Object, e As EventArgs) Handles customStatusStripItem.Click
+        Try
+            Using dialog As New StatusDialog(_presence.Custom)
+                If dialog.ShowDialog(Me) <> DialogResult.OK Then Return
+
+                Dim chosen = dialog.Result ' Nothing = remove the status
+                Dim result = Await UserSettingsService.SetCustomStatusAsync(chosen)
+                If IsDisposed Then Return
+
+                If result.IsSuccess Then
+                    _presence.Custom = chosen
+                    UpdateStatusMenu()
+                Else
+                    ShowProblem("Couldn't change your custom status", result)
+                End If
+            End Using
+        Catch ex As Exception
+            Debug.WriteLine("Changing the custom status failed: " & ex.ToString())
+        End Try
+    End Sub
+
+#End Region
 
     Protected Overrides Sub OnShown(e As EventArgs)
         MyBase.OnShown(e)

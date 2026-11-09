@@ -45,6 +45,8 @@ Partial Class Client
         Me.busyToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.idleToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.offlineToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.statusSeparator = New System.Windows.Forms.ToolStripSeparator()
+        Me.customStatusStripItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.profileStripItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.toolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.logOutStripItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -216,7 +218,7 @@ Partial Class Client
         '
         'accountStatusChanger
         '
-        Me.accountStatusChanger.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.onlineToolStripMenuItem, Me.busyToolStripMenuItem, Me.idleToolStripMenuItem, Me.offlineToolStripMenuItem})
+        Me.accountStatusChanger.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.onlineToolStripMenuItem, Me.busyToolStripMenuItem, Me.idleToolStripMenuItem, Me.offlineToolStripMenuItem, Me.statusSeparator, Me.customStatusStripItem})
         Me.accountStatusChanger.Name = "accountStatusChanger"
         Me.accountStatusChanger.Size = New System.Drawing.Size(180, 22)
         Me.accountStatusChanger.Text = "Your status"
@@ -249,6 +251,16 @@ Partial Class Client
         Me.offlineToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.offlineToolStripMenuItem.Text = "Offline"
         '
+        'statusSeparator
+        '
+        Me.statusSeparator.Name = "statusSeparator"
+        Me.statusSeparator.Size = New System.Drawing.Size(177, 6)
+        '
+        'customStatusStripItem
+        '
+        Me.customStatusStripItem.Name = "customStatusStripItem"
+        Me.customStatusStripItem.Size = New System.Drawing.Size(180, 22)
+        Me.customStatusStripItem.Text = "Set custom status..."
         'profileStripItem
         '
         Me.profileStripItem.Name = "profileStripItem"
@@ -310,6 +322,8 @@ Partial Class Client
     Friend WithEvents busyToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents idleToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents offlineToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents statusSeparator As System.Windows.Forms.ToolStripSeparator
+    Friend WithEvents customStatusStripItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents profileStripItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents toolStripSeparator1 As System.Windows.Forms.ToolStripSeparator
     Friend WithEvents logOutStripItem As System.Windows.Forms.ToolStripMenuItem

@@ -279,4 +279,40 @@ Namespace Networking.Models
         End Function
     End Class
 
+
+    ''' <summary>The custom status line ("Studying", with an emoji) that shows under your name.</summary>
+    Friend NotInheritable Class CustomStatus
+        Public Property Text As String
+        ''' <summary>A Unicode emoji such as a smiley face. (Server emoji are not supported yet.)</summary>
+        Public Property EmojiName As String
+        ''' <summary>When it clears itself, or Nothing if it stays until you remove it.</summary>
+        Public Property ExpiresAt As DateTimeOffset?
+
+        Public ReadOnly Property IsEmpty As Boolean
+            Get
+                Return String.IsNullOrWhiteSpace(Text) AndAlso String.IsNullOrWhiteSpace(EmojiName)
+            End Get
+        End Property
+
+        ''' <summary>"emoji text", as shown in menus.</summary>
+        Public Overrides Function ToString() As String
+            Return (If(EmojiName, "") & " " & If(Text, "")).Trim()
+        End Function
+
+        Friend Shared Function FromJson(el As JsonElement) As CustomStatus
+            If el.ValueKind <> JsonValueKind.Object Then Return Nothing
+            Dim expires As DateTimeOffset
+            Dim text As String = el.GetStr("expires_at")
+            Dim status As New CustomStatus With {.Text = el.GetStr("text"), .EmojiName = el.GetStr("emoji_name")}
+            If text IsNot Nothing AndAlso DateTimeOffset.TryParse(text, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.None, expires) Then status.ExpiresAt = expires
+            Return If(status.IsEmpty, Nothing, status)
+        End Function
+    End Class
+
+    ''' <summary>Your presence: "online", "idle", "dnd" (do not disturb) or "invisible", plus the custom status.</summary>
+    Friend NotInheritable Class PresenceSettings
+        Public Property Status As String = "online"
+        Public Property Custom As CustomStatus
+    End Class
+
 End Namespace
