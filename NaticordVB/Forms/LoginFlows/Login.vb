@@ -19,10 +19,10 @@ Public Class Login
         End If
 
         ' Verify that the token actually functions correctly
-        Dim corrToken As String = Await API.Instance.SendAPI("/users/@me", HttpMethod.Get, dscToken)
+        Dim result As ApiResult = Await API.Instance.RequestAsync("users/@me", HttpMethod.Get, dscToken)
 
-        ' Check for the "Unauthorized" in the request, which means the token isn't correct
-        If corrToken.Contains("Unauthorized") Then
+        If result.Error = ApiError.Unauthorized Then
+            ' Discord rejected the token
             Debug.WriteLine("Token is not correct and hasn't been saved to local settings.")
             Dim forceBox As DialogResult = MessageBox.Show(
                 "Your token is incorrect, please verify that you have entered it correctly and try again. If you are sure this is the right token, click 'OK' to force it to save.",
@@ -31,6 +31,16 @@ Public Class Login
                 MessageBoxIcon.Error)
 
             If forceBox = DialogResult.OK Then SaveToken(dscToken)
+        ElseIf Not result.IsSuccess Then
+            ' We couldn't tell: offline, timed out, rate limited, Discord having a bad day...
+            Debug.WriteLine($"Token could not be verified ({result.Error}): {result.ErrorMessage}")
+            Dim saveAnyway As DialogResult = MessageBox.Show(
+                "NaticordVB couldn't reach Discord to check your token (" & result.ErrorMessage & "). Click 'OK' to save it anyway, or 'Cancel' to try again later.",
+                "NaticordVB",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Warning)
+
+            If saveAnyway = DialogResult.OK Then SaveToken(dscToken)
         Else
             Debug.WriteLine("Token has been saved to local settings.")
             SaveToken(dscToken)

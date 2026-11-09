@@ -6,8 +6,6 @@ Imports NaticordVB.Networking
 Public Class Client
     Inherits GlassForm
 
-    Private ReadOnly dscToken As String = My.Settings.dscToken
-
     Private ReadOnly _friendItems As New List(Of DuiListItem)()
 
     Private _hDmIcon As IntPtr
@@ -74,7 +72,12 @@ Public Class Client
         Dim statusPage As New StatusPage()
         LoadFormIntoPanel(statusPage)
 
-        Await SetUserInformation()
+        ' This is an Async Sub: anything thrown here would crash the whole app, so nothing may escape.
+        Try
+            Await SetUserInformation()
+        Catch ex As Exception
+            Debug.WriteLine("SetUserInformation failed: " & ex.ToString())
+        End Try
     End Sub
 
     Protected Overrides Sub OnShown(e As EventArgs)
@@ -115,31 +118,46 @@ Public Class Client
         ' Use saved details first before actually loading data from Discord
         usernameLabel.Text = My.Settings.dscUsername
 
-        Dim userInfo As String = Await API.Instance.SendAPI("users/@me", HttpMethod.Get, dscToken)
-        If userInfo Is Nothing Then Return
+        Dim result As ApiResult = Await API.Instance.RequestAsync("users/@me", HttpMethod.Get, My.Settings.dscToken)
 
-        If userInfo.Contains("Unauthorized") Then
+        ' The window may have been closed while we were waiting for Discord.
+        If IsDisposed Then Return
+
+        If result.Error = ApiError.Unauthorized Then
             MessageBox.Show("Your token has expired or is invalid. NaticordVB will sign you out and you will need to sign in again.",
                             "NaticordVB", MessageBoxButtons.OK, MessageBoxIcon.Error)
 
             ' Wipe all Discord properties
             ClearDiscordSession()
             Application.Restart()
-        Else
-            Dim parsedUser As JsonObject = JsonNode.Parse(userInfo).AsObject()
-
-            Dim userId As String = parsedUser("id")?.GetValue(Of String)()
-            Dim username As String = If(parsedUser("username")?.GetValue(Of String)(), "anonymous_user")
-            Dim displayName As String = If(parsedUser("global_name")?.GetValue(Of String)(), username)
-
-            ' Save properties to settings for use!
-            My.Settings.dscUsername = displayName
-            My.Settings.dscUid = userId
-            My.Settings.Save()
-
-            usernameLabel.Text = displayName
-            ' TODO: Add avatar support (parsedUser("avatar"))
+            Return
         End If
+
+        If Not result.IsSuccess Then
+            ' Offline, timed out, rate limited...: keep what we have saved instead of failing.
+            Debug.WriteLine($"Could not refresh the user profile ({result.Error}): {result.ErrorMessage}")
+            If result.IsNetworkFailure Then
+                Text = "NaticordVB (offline)"
+                If String.IsNullOrEmpty(usernameLabel.Text) Then usernameLabel.Text = "Offline"
+            End If
+            Return
+        End If
+
+        Dim parsedUser As JsonObject = TryCast(JsonNode.Parse(result.Body), JsonObject)
+        If parsedUser Is Nothing Then Return
+
+        Dim userId As String = parsedUser("id")?.GetValue(Of String)()
+        Dim username As String = If(parsedUser("username")?.GetValue(Of String)(), "anonymous_user")
+        Dim displayName As String = If(parsedUser("global_name")?.GetValue(Of String)(), username)
+
+        ' Save properties to settings for use!
+        My.Settings.dscUsername = displayName
+        My.Settings.dscUid = userId
+        My.Settings.Save()
+
+        Text = "NaticordVB"
+        usernameLabel.Text = displayName
+        ' TODO: Add avatar support (parsedUser("avatar"))
     End Function
 
     Private Shared Sub ClearDiscordSession()
