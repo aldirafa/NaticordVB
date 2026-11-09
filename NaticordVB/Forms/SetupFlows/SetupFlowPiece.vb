@@ -75,7 +75,8 @@ Public Class SetupFlowPiece
             Dim clientForm As New Client()
             clientForm.Show()
 
-            Hide()
+            ' The client is already open, so the app keeps running (see NaticordContext).
+            Close()
         End If
     End Sub
 

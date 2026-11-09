@@ -30,16 +30,18 @@ Partial Class Login
         '
         'loginBanner
         '
+        Me.loginBanner.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.loginBanner.Image = Global.NaticordVB.My.Resources.Resources.naticord_banner
         Me.loginBanner.Location = New System.Drawing.Point(0, 0)
         Me.loginBanner.Name = "loginBanner"
         Me.loginBanner.Size = New System.Drawing.Size(412, 100)
-        Me.loginBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize
+        Me.loginBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.loginBanner.TabIndex = 1
         Me.loginBanner.TabStop = False
         '
         'loginDuiRenderer
         '
+        Me.loginDuiRenderer.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.loginDuiRenderer.BackColor = System.Drawing.SystemColors.AppWorkspace
         Me.loginDuiRenderer.Location = New System.Drawing.Point(0, 100)
         Me.loginDuiRenderer.Name = "loginDuiRenderer"

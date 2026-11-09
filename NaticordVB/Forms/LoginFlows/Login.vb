@@ -45,7 +45,8 @@ Public Class Login
             Try
                 Await SignInSequence()
             Finally
-                loginDuiRenderer.Element("btnSignIn").SetEnabled(True)
+                ' A successful sign-in closes this form, so there is nothing left to re-enable.
+                If Not IsDisposed Then loginDuiRenderer.Element("btnSignIn").SetEnabled(True)
             End Try
         ElseIf e.ElementId = "btnQrLaunch" Then
             loginDuiRenderer.Element("btnQrLaunch").SetEnabled(False)
@@ -54,7 +55,7 @@ Public Class Login
             Using qr As New QRLogin(Me)
                 qr.ShowDialog()
             End Using
-            loginDuiRenderer.Element("btnQrLaunch").SetEnabled(True)
+            If Not IsDisposed Then loginDuiRenderer.Element("btnQrLaunch").SetEnabled(True)
         End If
     End Sub
 
@@ -65,7 +66,7 @@ Public Class Login
         ContinueAfterLogin()
     End Sub
 
-    ''' <summary>Opens the setup flow (first run) or the client, and hides this form (it is the host form, so it can't be closed).</summary>
+    ''' <summary>Opens the setup flow (first run) or the client, then closes this form.</summary>
     Friend Sub ContinueAfterLogin()
         If Not My.Settings.hasCompletedSetup Then
             ' Continue to the setup flow
@@ -77,7 +78,8 @@ Public Class Login
             clientForm.Show()
         End If
 
-        Hide()
+        ' The next form is already open, so the app keeps running (see NaticordContext).
+        Close()
     End Sub
 
 End Class
