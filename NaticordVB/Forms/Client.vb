@@ -6,53 +6,34 @@ Imports NaticordVB.Networking
 Public Class Client
     Inherits GlassForm
 
-    Private ReadOnly _friendItems As New List(Of DuiListItem)()
+    ' The two pages that live in contentPanel. They are shown/hidden, never closed or disposed on the fly:
+    ' StatusPage hosts DirectUI, and destroying a DirectUI host window ends the whole message loop.
+    Private _statusPage As StatusPage
+    Private _chatPage As ChatPage
 
-    Private _hDmIcon As IntPtr
-    Private _hServerIcon As IntPtr
+    Private WithEvents _sidebar As SidebarController
+    Private ReadOnly _dmRefreshTimer As New Timer() With {.Interval = 60000}
 
-    Public Sub LoadFormIntoPanel(form As Form)
-        ' Copy first: disposing a child removes it from the collection we'd be enumerating.
-        For Each c As Control In contentPanel.Controls.Cast(Of Control)().ToList()
-            c.Dispose()
-        Next
-        contentPanel.Controls.Clear()
+    ''' <summary>Puts a page inside contentPanel, filling it.</summary>
+    Private Sub AddToContent(page As Form)
+        page.TopLevel = False
+        page.FormBorderStyle = FormBorderStyle.None
+        page.Dock = DockStyle.Fill
 
-        form.TopLevel = False
-        form.FormBorderStyle = FormBorderStyle.None
-        form.Dock = DockStyle.Fill
-
-        contentPanel.Controls.Add(form)
-        form.Show()
+        contentPanel.Controls.Add(page)
+        page.Show()
     End Sub
 
-    Private Sub SetSidebarIcon(baseName As String, elementId As String, ByRef hCache As IntPtr)
-        ReleaseHBitmap(hCache)
-        hCache = LoadExtResourceHBitmap(baseName)
-
-        sidebarRenderer.DuiWindow?.SetContentBitmap(elementId, hCache)
+    ''' <summary>Opens a conversation in the content area.</summary>
+    Private Sub ShowChat(channel As Networking.Models.DiscordChannel, title As String)
+        _statusPage.Hide()
+        _chatPage.OpenChannel(channel, title)
+        _chatPage.Show()
     End Sub
 
-    Friend Function AddFriendItem(username As String, statusText As String, avatar As Bitmap, id As Integer, statusCode As Integer,
-                                  Optional extraStatusCode As Integer = 5) As DuiListItem
-        Dim duiWin = sidebarRenderer.DuiWindow
-        If duiWin Is Nothing Then Return Nothing
-
-        Dim listItem As New DuiListItem(id)
-
-        Using duiWin.BeginDefer()
-            listItem.Mount(duiWin, "friendList")
-            _friendItems.Add(listItem)
-
-            listItem.SetUsername(username)
-            listItem.SetStatus(statusText)
-
-            If avatar IsNot Nothing Then listItem.SetProfilePicture(avatar)
-            listItem.SetStatusIcon(statusCode, extraStatusCode)
-        End Using
-
-        Return listItem
-    End Function
+    Private Sub Sidebar_ChannelChosen(channel As Networking.Models.DiscordChannel, title As String) Handles _sidebar.ChannelChosen
+        ShowChat(channel, title)
+    End Sub
 
     Public Sub New()
         InitializeComponent()
@@ -68,9 +49,14 @@ Public Class Client
     End Sub
 
     Private Async Sub Client_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Load the StatusPage into the contentPanel
-        Dim statusPage As New StatusPage()
-        LoadFormIntoPanel(statusPage)
+        ' "Hold on!" is shown until the user opens a conversation.
+        _statusPage = New StatusPage()
+        _chatPage = New ChatPage()
+        AddToContent(_statusPage)
+        AddToContent(_chatPage)
+        _chatPage.Hide()
+
+        _sidebar = New SidebarController(chatList)
 
         ' This is an Async Sub: anything thrown here would crash the whole app, so nothing may escape.
         Try
@@ -96,22 +82,62 @@ Public Class Client
             screenArea.Top + (screenArea.Height - Height) \ 2)
 
         buttonPanel.Top = 0
-        If DetectDwmStatus.IsDwmEnabled() Then
-            sidebarRenderer.Top = glassMargin.Top
-        Else
-            sidebarRenderer.Top = buttonPanel.Bottom
-        End If
+        Dim panelTop As Integer = If(DetectDwmStatus.IsDwmEnabled(), glassMargin.Top, buttonPanel.Bottom)
 
-        Dim panelTop As Integer = sidebarRenderer.Top
+        ' The sidebar, top to bottom: tabs, the DirectUI search box, then the list. The last pixel column is a divider line.
+        Const sidebarWidth As Integer = 250
+        Dim innerWidth As Integer = LogicalToDeviceUnits(sidebarWidth) - 1
+        Dim tabHeight As Integer = LogicalToDeviceUnits(30)
+        Dim searchHeight As Integer = LogicalToDeviceUnits(31)
 
-        contentPanel.Top = panelTop
-        sidebarRenderer.Height = ClientSize.Height - panelTop
-        contentPanel.Height = ClientSize.Height - panelTop
+        tabPanel.SetBounds(0, panelTop, innerWidth, tabHeight)
+        rbMessages.SetBounds(0, 0, innerWidth \ 2, tabHeight)
+        rbServers.SetBounds(innerWidth \ 2, 0, innerWidth - innerWidth \ 2, tabHeight)
+        sidebarRenderer.SetBounds(0, tabPanel.Bottom, innerWidth + 1, searchHeight)
+        chatList.SetBounds(0, sidebarRenderer.Bottom, innerWidth, ClientSize.Height - sidebarRenderer.Bottom)
+        sidebarDivider.SetBounds(innerWidth, panelTop, 1, ClientSize.Height - panelTop)
 
-        AddFriendItem("Placeholder username", "Listening to a song", Nothing, 0, 1, 1)
+        contentPanel.SetBounds(innerWidth + 1, panelTop, ClientSize.Width - innerWidth - 1, ClientSize.Height - panelTop)
 
-        SetSidebarIcon("dm", "dmPic", _hDmIcon)
-        SetSidebarIcon("servers", "serverPic", _hServerIcon)
+        ' Tab icons follow the chosen icon style (skeuomorphic or modern).
+        Dim skeuo As Boolean = IconSuffix = "-skeuo"
+        rbMessages.Image = If(skeuo, My.Resources.dm_skeuo, My.Resources.dm)
+        rbServers.Image = If(skeuo, My.Resources.servers_skeuo, My.Resources.servers)
+
+        ' Start on the Messages tab. Checking the box also loads the list (see the CheckedChanged handlers).
+        rbMessages.Checked = True
+
+        AddHandler _dmRefreshTimer.Tick, AddressOf OnDmRefreshTick
+        _dmRefreshTimer.Start()
+    End Sub
+
+    Private Async Sub rbMessages_CheckedChanged(sender As Object, e As EventArgs) Handles rbMessages.CheckedChanged
+        If Not rbMessages.Checked Then Return
+        Try
+            Await _sidebar.ShowDirectMessagesAsync()
+        Catch ex As Exception
+            Debug.WriteLine("Showing messages failed: " & ex.ToString())
+        End Try
+    End Sub
+
+    Private Async Sub rbServers_CheckedChanged(sender As Object, e As EventArgs) Handles rbServers.CheckedChanged
+        If Not rbServers.Checked Then Return
+        Try
+            Await _sidebar.ShowServersAsync()
+        Catch ex As Exception
+            Debug.WriteLine("Showing servers failed: " & ex.ToString())
+        End Try
+    End Sub
+
+    ''' <summary>Quietly refreshes the DM order (new messages move a conversation up) while the Messages tab is showing.</summary>
+    Private Async Sub OnDmRefreshTick(sender As Object, e As EventArgs)
+        If _sidebar Is Nothing OrElse _sidebar.Mode <> SidebarMode.DirectMessages OrElse Not rbMessages.Checked Then Return
+        If Not Visible OrElse WindowState = FormWindowState.Minimized Then Return
+        Try
+            Await _sidebar.ShowDirectMessagesAsync(forceReload:=True)
+        Catch ex As Exception
+            Debug.WriteLine("DM refresh failed: " & ex.ToString())
+        End Try
     End Sub
 
     Private Async Function SetUserInformation() As Task
@@ -168,8 +194,8 @@ Public Class Client
     End Sub
 
     Protected Overrides Sub OnFormClosed(e As FormClosedEventArgs)
-        ReleaseHBitmap(_hDmIcon)
-        ReleaseHBitmap(_hServerIcon)
+        _dmRefreshTimer.Stop()
+        _dmRefreshTimer.Dispose()
 
         MyBase.OnFormClosed(e)
     End Sub

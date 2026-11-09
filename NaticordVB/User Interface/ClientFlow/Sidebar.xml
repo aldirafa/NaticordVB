@@ -30,20 +30,8 @@
 	<HWNDElement resid="sidebarPieceMain" id="atom(root)" layout="borderlayout()" sheet="sidebarSheet">
 
         <element layoutpos="client" class="sidebarPiece" layout="borderlayout()">
-            <element layoutpos="top" class="sidebarPieceHeader" height="30rp" layout="borderlayout()">
-
-                <element layoutpos="left" width="250rp" layout="borderlayout()">
-                    <element layoutpos="left" class="sidebarFirstPieceDirect" layout="flowlayout(0,2,4)" padding="rect(8rp, 0rp, 8rp, 0rp)" width="125rp">
-                        <element id="atom(dmPic)" width="16rp" height="16rp" />
-                        <element layoutpos="left" padding="rect(4rp, 0rp, 0rp, 0rp)" content="Messages" />
-                   </element>
-                    <element layoutpos="client" class="sidebarSecondPieceServers" layout="flowlayout(0,2,4)" padding="rect(8rp, 0rp, 8rp, 0rp)" width="125rp">
-                        <element id="atom(serverPic)" width="16rp" height="16rp" />
-                        <element layoutpos="left" padding="rect(4rp, 0rp, 0rp, 0rp)" content="Servers" />
-                   </element>
-                </element>
-
-            </element>
+            <!-- The Messages / Servers tabs and the chat list are WinForms controls now (see Client.Designer.vb):
+                 DirectUI could neither scroll the list nor tell which row was clicked. Only the search box stays here. -->
             <element layoutpos="top" class="sidebarPieceSearch" height="30rp" layout="borderlayout()">
 
                 <element layoutpos="client" padding="rect(8rp, 5rp, 8rp, 5rp)" layout="borderlayout()">
@@ -52,8 +40,6 @@
                 </element>
 
             </element>
-
-            <element layoutpos="client" id="atom(friendList)" layout="verticalflowlayout()" />
         </element>
 
 	</HWNDElement>

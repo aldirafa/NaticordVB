@@ -10,11 +10,6 @@ Partial Class Client
                 If components IsNot Nothing Then
                     components.Dispose()
                 End If
-
-                For Each item In _friendItems
-                    item.Dispose()
-                Next
-                _friendItems.Clear()
             End If
         Finally
             MyBase.Dispose(disposing)
@@ -38,6 +33,11 @@ Partial Class Client
         Me.settingsButton = New NaticordVB.GlassExtendedButton()
         Me.accountButton = New NaticordVB.GlassExtendedButton()
         Me.sidebarRenderer = New DirectUI.Net.Hosting.DirectUIRenderer()
+        Me.tabPanel = New System.Windows.Forms.Panel()
+        Me.rbMessages = New System.Windows.Forms.RadioButton()
+        Me.rbServers = New System.Windows.Forms.RadioButton()
+        Me.chatList = New NaticordVB.ChatListBox()
+        Me.sidebarDivider = New System.Windows.Forms.Panel()
         Me.contentPanel = New System.Windows.Forms.Panel()
         Me.accountContext = New NaticordVB.NativeContextGenerator(Me.components)
         Me.accountStatusChanger = New System.Windows.Forms.ToolStripMenuItem()
@@ -134,15 +134,70 @@ Partial Class Client
         '
         'sidebarRenderer
         '
-        Me.sidebarRenderer.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.sidebarRenderer.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.sidebarRenderer.BackColor = System.Drawing.SystemColors.AppWorkspace
-        Me.sidebarRenderer.Location = New System.Drawing.Point(0, 35)
+        Me.sidebarRenderer.Location = New System.Drawing.Point(0, 65)
         Me.sidebarRenderer.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.sidebarRenderer.Name = "sidebarRenderer"
         Me.sidebarRenderer.ResId = "sidebarPieceMain"
-        Me.sidebarRenderer.Size = New System.Drawing.Size(250, 503)
+        Me.sidebarRenderer.Size = New System.Drawing.Size(250, 31)
         Me.sidebarRenderer.TabIndex = 1
         Me.sidebarRenderer.XmlFile = "User Interface\ClientFlow\Sidebar.xml"
+        '
+        'tabPanel
+        '
+        Me.tabPanel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.tabPanel.Controls.Add(Me.rbMessages)
+        Me.tabPanel.Controls.Add(Me.rbServers)
+        Me.tabPanel.Location = New System.Drawing.Point(0, 35)
+        Me.tabPanel.Name = "tabPanel"
+        Me.tabPanel.Size = New System.Drawing.Size(249, 30)
+        Me.tabPanel.TabIndex = 3
+        '
+        'rbMessages
+        '
+        Me.rbMessages.Appearance = System.Windows.Forms.Appearance.Button
+        Me.rbMessages.FlatStyle = System.Windows.Forms.FlatStyle.Standard
+        Me.rbMessages.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.rbMessages.Location = New System.Drawing.Point(0, 0)
+        Me.rbMessages.Name = "rbMessages"
+        Me.rbMessages.Size = New System.Drawing.Size(124, 30)
+        Me.rbMessages.TabIndex = 0
+        Me.rbMessages.Text = "Messages"
+        Me.rbMessages.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.rbMessages.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText
+        Me.rbMessages.UseVisualStyleBackColor = True
+        '
+        'rbServers
+        '
+        Me.rbServers.Appearance = System.Windows.Forms.Appearance.Button
+        Me.rbServers.FlatStyle = System.Windows.Forms.FlatStyle.Standard
+        Me.rbServers.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.rbServers.Location = New System.Drawing.Point(124, 0)
+        Me.rbServers.Name = "rbServers"
+        Me.rbServers.Size = New System.Drawing.Size(125, 30)
+        Me.rbServers.TabIndex = 1
+        Me.rbServers.Text = "Servers"
+        Me.rbServers.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.rbServers.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText
+        Me.rbServers.UseVisualStyleBackColor = True
+        '
+        'chatList
+        '
+        Me.chatList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.chatList.Location = New System.Drawing.Point(0, 96)
+        Me.chatList.Name = "chatList"
+        Me.chatList.Size = New System.Drawing.Size(249, 442)
+        Me.chatList.TabIndex = 4
+        '
+        'sidebarDivider
+        '
+        Me.sidebarDivider.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.sidebarDivider.BackColor = System.Drawing.SystemColors.ControlLight
+        Me.sidebarDivider.Location = New System.Drawing.Point(249, 35)
+        Me.sidebarDivider.Name = "sidebarDivider"
+        Me.sidebarDivider.Size = New System.Drawing.Size(1, 503)
+        Me.sidebarDivider.TabIndex = 5
         '
         'contentPanel
         '
@@ -218,7 +273,10 @@ Partial Class Client
         Me.BackColor = System.Drawing.Color.White
         Me.ClientSize = New System.Drawing.Size(971, 538)
         Me.Controls.Add(Me.contentPanel)
+        Me.Controls.Add(Me.chatList)
+        Me.Controls.Add(Me.sidebarDivider)
         Me.Controls.Add(Me.sidebarRenderer)
+        Me.Controls.Add(Me.tabPanel)
         Me.Controls.Add(Me.buttonPanel)
         Me.GlassMargins = New System.Windows.Forms.Padding(0, 30, 0, 0)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
@@ -239,6 +297,11 @@ Partial Class Client
     Friend WithEvents settingsButton As GlassExtendedButton
     Friend WithEvents avatarBox As System.Windows.Forms.PictureBox
     Friend WithEvents sidebarRenderer As DirectUI.Net.Hosting.DirectUIRenderer
+    Friend WithEvents tabPanel As System.Windows.Forms.Panel
+    Friend WithEvents rbMessages As System.Windows.Forms.RadioButton
+    Friend WithEvents rbServers As System.Windows.Forms.RadioButton
+    Friend WithEvents chatList As ChatListBox
+    Friend WithEvents sidebarDivider As System.Windows.Forms.Panel
     Friend WithEvents usernameLabel As AeroLabel
     Friend WithEvents contentPanel As System.Windows.Forms.Panel
     Friend WithEvents accountContext As NativeContextGenerator
