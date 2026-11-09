@@ -79,7 +79,7 @@ What changed, release by release, lives in the [CHANGELOG](CHANGELOG.md).
 ## ⚠️ Known limits
 - Edits and deletions made by other people are not shown until you reopen the chat.
 - The first time a chat is seen it counts as read.
-- Names are display names or usernames; server nicknames and role colours are not loaded.
+- Names are display names or usernames; server nicknames and role colours are not loaded. (yet)
 - Emoji are drawn with plain Windows text: partly monochrome, and server emoji are not images.
 - Using a user token goes against Discord's terms of service. Use it at your own risk.
 
