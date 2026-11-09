@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>NaticordVB</RootNamespace>
+    <AssemblyName>NaticordVB</AssemblyName>
+    <StartupObject>NaticordVB.Program</StartupObject>
+    <MyType>WindowsFormsWithCustomSubMain</MyType>
+    <ApplicationIcon>naticord.ico</ApplicationIcon>
+    <OptionStrict>On</OptionStrict>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionInfer>On</OptionInfer>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Product>Naticord</Product>
+    <Description>Discord client built with Windows Forms and DirectUI</Description>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- DirectUI.Net and Windows-Forms-Aero are .NET Framework assemblies; they load fine on modern .NET. -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
+    <PackageReference Include="Windows-Forms-Aero" Version="3.1.1" />
+    <PackageReference Include="ZXing.Net" Version="0.16.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DirectUI.Net">
+      <HintPath>SharpLibraries\DirectUI.Net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Import Include="System.Drawing" />
+    <Import Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <!-- Replaces the old xcopy pre-build step: runtime assets are copied next to the exe. -->
+  <ItemGroup>
+    <None Include="ExtResources\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="User Interface\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Native dui_bridge.dll (x64/Win32) is not part of this repo; if you drop it in Libraries\ it is copied too. -->
+    <None Include="Libraries\**\*" CopyToOutputDirectory="PreserveNewest" Condition="Exists('Libraries')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\**\*.png" />
+    <None Update="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+    <Compile Update="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+
+</Project>
