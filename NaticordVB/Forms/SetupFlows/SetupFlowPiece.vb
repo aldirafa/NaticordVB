@@ -73,10 +73,11 @@ Public Class SetupFlowPiece
 
             ' Continue to the client
             Dim clientForm As New Client()
+            NaticordContext.Track(clientForm)
             clientForm.Show()
 
-            ' The client is already open, so the app keeps running (see NaticordContext).
-            Close()
+            ' Hide, don't Close: destroying a DirectUI host window ends the message loop (see Login.ContinueAfterLogin).
+            Hide()
         End If
     End Sub
 

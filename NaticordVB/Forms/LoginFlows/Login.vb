@@ -45,8 +45,7 @@ Public Class Login
             Try
                 Await SignInSequence()
             Finally
-                ' A successful sign-in closes this form, so there is nothing left to re-enable.
-                If Not IsDisposed Then loginDuiRenderer.Element("btnSignIn").SetEnabled(True)
+                loginDuiRenderer.Element("btnSignIn").SetEnabled(True)
             End Try
         ElseIf e.ElementId = "btnQrLaunch" Then
             loginDuiRenderer.Element("btnQrLaunch").SetEnabled(False)
@@ -55,7 +54,7 @@ Public Class Login
             Using qr As New QRLogin(Me)
                 qr.ShowDialog()
             End Using
-            If Not IsDisposed Then loginDuiRenderer.Element("btnQrLaunch").SetEnabled(True)
+            loginDuiRenderer.Element("btnQrLaunch").SetEnabled(True)
         End If
     End Sub
 
@@ -66,20 +65,17 @@ Public Class Login
         ContinueAfterLogin()
     End Sub
 
-    ''' <summary>Opens the setup flow (first run) or the client, then closes this form.</summary>
+    ''' <summary>
+    ''' Opens the setup flow (first run) or the client, then hides this form. It can't be closed: destroying a
+    ''' window that hosts DirectUI ends the message loop and would take the whole app down with it.
+    ''' </summary>
     Friend Sub ContinueAfterLogin()
-        If Not My.Settings.hasCompletedSetup Then
-            ' Continue to the setup flow
-            Dim setupFlowPiece As New SetupFlowPiece()
-            setupFlowPiece.Show()
-        Else
-            ' Continue to the client
-            Dim clientForm As New Client()
-            clientForm.Show()
-        End If
+        Dim nextForm As Form = If(My.Settings.hasCompletedSetup, DirectCast(New Client(), Form), New SetupFlowPiece())
 
-        ' The next form is already open, so the app keeps running (see NaticordContext).
-        Close()
+        NaticordContext.Track(nextForm)
+        nextForm.Show()
+
+        Hide()
     End Sub
 
 End Class
